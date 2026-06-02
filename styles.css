@@ -714,6 +714,7 @@ label:hover{color:var(--text)}
 @keyframes hudSheen{0%{transform:translateX(-165%) skewX(-18deg)}100%{transform:translateX(265%) skewX(-18deg)}}
 @keyframes hudScan{0%{transform:translateY(-14%);opacity:0}10%{opacity:.5}50%{opacity:.16}90%{opacity:.42}100%{transform:translateY(118%);opacity:0}}
 @keyframes hudUnderline{0%{background-position:-55% 0}100%{background-position:160% 0}}
+@keyframes hudCore{0%,100%{opacity:.45;transform:scale(.97)}50%{opacity:1;transform:scale(1.02)}}
 
 /* 1. AMBIENTE — profundidade com parallax + varredura de dados lenta */
 .fx-aurora{transition:transform .7s cubic-bezier(.22,.7,.2,1);
@@ -723,20 +724,27 @@ label:hover{color:var(--text)}
   mix-blend-mode:screen;animation:hudScan 15s ease-in-out infinite}
 
 /* 2. CARDS — vidro fosco deixando a aurora viva vazar por tras */
-.card{background:linear-gradient(180deg,rgba(24,24,29,.74),rgba(13,13,16,.64));
+.card{background:
+    radial-gradient(125% 86% at 0% 0%,rgba(255,255,255,.06),transparent 46%),
+    linear-gradient(180deg,rgba(24,24,29,.74),rgba(13,13,16,.64));
   backdrop-filter:blur(13px) saturate(125%);-webkit-backdrop-filter:blur(13px) saturate(125%)}
 [data-theme="light"] .card{backdrop-filter:none;-webkit-backdrop-filter:none}
 .card::after{
-  background:linear-gradient(90deg,transparent,var(--line-strong) 14%,rgba(255,59,70,.4) 40%,
-    rgba(255,150,156,.62) 50%,rgba(255,59,70,.4) 60%,var(--line-strong) 86%,transparent);
-  background-size:230% 100%;opacity:.4;animation:hudGlide 11s ease-in-out infinite}
+  background:linear-gradient(90deg,transparent,var(--line-strong) 16%,rgba(255,59,70,.26) 42%,
+    rgba(255,142,150,.48) 50%,rgba(255,59,70,.26) 58%,var(--line-strong) 84%,transparent);
+  background-size:230% 100%;opacity:.32;animation:hudGlide 13s ease-in-out infinite}
 .card:hover::after{opacity:.92}
 .card:hover{box-shadow:0 1px 0 rgba(255,255,255,.06) inset,0 40px 80px -34px rgba(0,0,0,.95),
   0 0 0 1px rgba(255,59,70,.14),0 0 34px -6px rgba(255,59,70,.22)}
 
-/* 3. SCORE RING — halo de energia em orbita continua */
+/* 3. SCORE RING — halo orbitando + nucleo de energia pulsando atras do numero */
 .score-ring::before{animation:hudOrbit 16s linear infinite}
 .score-ring:hover::before{animation-duration:5s}
+.score-ring::after{content:'';position:absolute;inset:0;border-radius:50%;pointer-events:none;z-index:0;
+  background:radial-gradient(circle at 50% 47%,rgba(255,59,70,.24),transparent 56%);
+  animation:hudCore 4.6s ease-in-out infinite}
+.score-ring .num,.score-ring .lbl{position:relative;z-index:1}
+.score-ring .num{text-shadow:0 0 22px rgba(255,59,70,.3)}
 
 /* 4. NAV ATIVA — barra lateral pulsando */
 .nav-item.active::before{animation:hudNavPulse 2.8s ease-in-out infinite}
@@ -764,7 +772,14 @@ label:hover{color:var(--text)}
 .bar.red>span{background:linear-gradient(90deg,var(--red-3),var(--red),#ff7a82,var(--red),var(--red-3));
   background-size:220% 100%;animation:barfill .9s cubic-bezier(.2,.7,.2,1) both,hudFlow 5s linear .9s infinite}
 
-/* coerencia com tema claro (suaviza a varredura e o filete) */
+/* 9. VALORES NEGATIVOS — leve luminosidade vermelha (sutil, sem neon barato) */
+.stat .value.neg,.li-amt.neg{text-shadow:0 0 16px rgba(255,59,70,.22)}
+
+/* coerencia com tema claro: mantem o claro plano e tipografico, sem brilhos */
+[data-theme="light"] .score-ring::after{display:none}
+[data-theme="light"] .score-ring .num,[data-theme="light"] .stat .value.neg,
+[data-theme="light"] .li-amt.neg{text-shadow:none}
+[data-theme="light"] .card{background:#ffffff}
 [data-theme="light"] .fx-aurora::after{background:linear-gradient(180deg,rgba(224,27,42,.05),transparent 72%)}
 [data-theme="light"] .card::after{
   background:linear-gradient(90deg,transparent,var(--line-strong) 14%,rgba(224,27,42,.32) 40%,
