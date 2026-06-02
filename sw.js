@@ -1,26 +1,29 @@
 /* ============================================================
    PROSPERA — Service Worker (offline-first app shell)
    ============================================================ */
-const CACHE = 'prospera-v16';
+const CACHE = 'prospera-v17';
 const ASSETS = [
   './',
   'index.html',
-  'styles.css?v=16',
-  'js/config.js?v=16',
-  'js/icons.js?v=16',
-  'js/cloud.js?v=16',
-  'js/store.js?v=16',
-  'js/auth.js?v=16',
-  'js/charts.js?v=16',
-  'js/insights.js?v=16',
-  'js/finance.js?v=16',
-  'js/bank.js?v=16',
-  'js/advisor.js?v=16',
-  'js/reports.js?v=16',
-  'js/app.js?v=16',
+  'styles.css?v=17',
+  'js/config.js?v=17',
+  'js/icons.js?v=17',
+  'js/cloud.js?v=17',
+  'js/store.js?v=17',
+  'js/auth.js?v=17',
+  'js/charts.js?v=17',
+  'js/insights.js?v=17',
+  'js/finance.js?v=17',
+  'js/bank.js?v=17',
+  'js/advisor.js?v=17',
+  'js/reports.js?v=17',
+  'js/app.js?v=17',
   'hero.svg',
   'manifest.json',
-  'icon.svg'
+  'icon.svg',
+  'icon-192.png',
+  'icon-512.png',
+  'apple-touch-icon.png'
 ];
 
 self.addEventListener('install', e => {
