@@ -1,0 +1,15 @@
+{
+  "name": "Prospera — Finanças Pessoais",
+  "short_name": "Prospera",
+  "description": "Controle suas finanças com orçamentos, metas, dívidas e insights feitos para a sua realidade.",
+  "lang": "pt-BR",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0d14",
+  "theme_color": "#0a0d14",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice" fill="none">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="22%" r="60%">
+      <stop offset="0%" stop-color="#ff3b46" stop-opacity="0.55"/>
+      <stop offset="38%" stop-color="#e01b2a" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="orbGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ff6b73" stop-opacity="0.9"/>
+      <stop offset="55%" stop-color="#ff3b46" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="curve" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0%" stop-color="#b3131f" stop-opacity="0"/>
+      <stop offset="35%" stop-color="#e01b2a" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#ff6b73" stop-opacity="1"/>
+    </linearGradient>
+    <linearGradient id="line" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#ff3b46" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#ff3b46" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#ff3b46" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- ambient glow -->
+  <rect width="1600" height="1000" fill="url(#glow)"/>
+
+  <!-- perspective horizon grid -->
+  <g stroke="#ff3b46" stroke-opacity="0.14" stroke-width="1">
+    <path d="M-200 1000 L640 560"/>
+    <path d="M120 1000 L700 560"/>
+    <path d="M460 1000 L770 560"/>
+    <path d="M800 1000 L800 560"/>
+    <path d="M1140 1000 L830 560"/>
+    <path d="M1480 1000 L900 560"/>
+    <path d="M1800 1000 L960 560"/>
+  </g>
+  <g stroke="#ff3b46" stroke-opacity="0.10" stroke-width="1">
+    <path d="M120 640 H1480"/>
+    <path d="M40 720 H1560"/>
+    <path d="M-40 820 H1640"/>
+    <path d="M-140 940 H1740"/>
+  </g>
+
+  <!-- concentric radar rings -->
+  <g transform="translate(800 270)" stroke="#ff3b46" fill="none">
+    <circle r="120" stroke-opacity="0.30" stroke-width="1.2"/>
+    <circle r="210" stroke-opacity="0.20" stroke-width="1.2"/>
+    <circle r="320" stroke-opacity="0.12" stroke-width="1.2"/>
+    <circle r="450" stroke-opacity="0.07" stroke-width="1.2"/>
+  </g>
+
+  <!-- central orb -->
+  <circle cx="800" cy="270" r="240" fill="url(#orbGlow)"/>
+  <circle cx="800" cy="270" r="58" fill="#ff3b46" fill-opacity="0.85"/>
+  <circle cx="800" cy="270" r="92" stroke="#ff8088" stroke-opacity="0.5" stroke-width="1.5"/>
+
+  <!-- growth curve -->
+  <path d="M180 760 C 420 720, 520 640, 700 600 S 1020 470, 1240 300 1430 150 1430 150"
+        stroke="url(#curve)" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="1430" cy="150" r="6" fill="#ff6b73"/>
+  <circle cx="700" cy="600" r="4" fill="#e01b2a"/>
+  <circle cx="1020" cy="455" r="4" fill="#e01b2a"/>
+
+  <!-- scan lines -->
+  <g>
+    <rect x="120" y="430" width="1360" height="1.5" fill="url(#line)"/>
+    <rect x="260" y="500" width="1080" height="1" fill="url(#line)" opacity="0.6"/>
+  </g>
+
+  <!-- floating particles -->
+  <g fill="#ff6b73">
+    <circle cx="430" cy="220" r="2.5" fill-opacity="0.8"/>
+    <circle cx="1180" cy="180" r="2" fill-opacity="0.7"/>
+    <circle cx="980" cy="120" r="1.8" fill-opacity="0.6"/>
+    <circle cx="560" cy="380" r="2" fill-opacity="0.5"/>
+    <circle cx="1280" cy="360" r="2.4" fill-opacity="0.7"/>
+    <circle cx="360" cy="120" r="1.6" fill-opacity="0.5"/>
+  </g>
+</svg>

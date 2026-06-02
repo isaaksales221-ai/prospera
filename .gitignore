@@ -1,0 +1,9 @@
+# Sistema
+.DS_Store
+*.log
+
+# Ambiente local do agente
+.claude/
+
+# Dependências (caso algum dia existam)
+node_modules/
