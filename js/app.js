@@ -220,7 +220,15 @@ const App = (() => {
   /* spotlight que segue o cursor sobre os cards (ligado uma única vez) */
   function bindMotionGlobals() {
     if (_motionBound) return; _motionBound = true;
+    const aurora = document.querySelector('.fx-aurora');
     document.addEventListener('mousemove', e => {
+      // parallax de profundidade: o campo ambiente segue o cursor com leve atraso
+      if (aurora && !REDUCE()) {
+        const px = (e.clientX / window.innerWidth - 0.5);
+        const py = (e.clientY / window.innerHeight - 0.5);
+        aurora.style.setProperty('--par-x', (px * -26).toFixed(1));
+        aurora.style.setProperty('--par-y', (py * -22).toFixed(1));
+      }
       const card = e.target.closest && e.target.closest('.card');
       if (!card) return;
       const r = card.getBoundingClientRect();
