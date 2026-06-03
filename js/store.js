@@ -260,6 +260,21 @@ const Store = (() => {
   /* settings */
   function setSettings(patch) { _data.settings = { ...(_data.settings || {}), ...patch }; save(); }
 
+  /* indexadores econômicos — base offline para projeções e simulações.
+     Valores editáveis pelo usuário; defaults servem só como ponto de partida. */
+  const DEFAULT_RATES = { selic: 15, cdi: 14.9, ipca: 4.5 };
+  function rates() {
+    const r = (_data.settings && _data.settings.rates) || {};
+    const num = (v, d) => { const n = parseFloat(v); return Number.isFinite(n) ? n : d; };
+    return {
+      selic: num(r.selic, DEFAULT_RATES.selic),
+      cdi: num(r.cdi, DEFAULT_RATES.cdi),
+      ipca: num(r.ipca, DEFAULT_RATES.ipca),
+      updatedAt: r.updatedAt || 0,
+      customized: !!r.updatedAt
+    };
+  }
+
   /* reports */
   function saveReport(r) {
     const i = _data.reports.findIndex(x => x.key === r.key);
@@ -319,7 +334,7 @@ const Store = (() => {
     addRecurring, updateRecurring, removeRecurring, setBudget,
     addAsset, updateAsset, removeAsset,
     addConnection, updateConnection, removeConnection, connections,
-    setSettings, saveReport,
+    setSettings, rates, saveReport,
     accountsSummary, removeAccount,
     exportData, importData, wipeUserData
   };

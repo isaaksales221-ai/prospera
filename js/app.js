@@ -892,6 +892,7 @@ const App = (() => {
     /* ---------- SETTINGS ---------- */
     settings() {
       const s = Store.data().settings || {};
+      const r = Store.rates();
       const u = state.user;
       return `
       <div class="view-head"><div><h2>Ajustes</h2><p>Perfil e preferências</p></div></div>
@@ -920,6 +921,26 @@ const App = (() => {
             <button class="btn btn-danger" onclick="App.wipe()">${ICON('trash')} Apagar todos os meus lançamentos</button>
           </div>
         </div>
+      </div>
+      <div class="card rates-card">
+        <h3>${ICON('pulse')} Indexadores econômicos <span class="tag-base">base das projeções</span></h3>
+        <p class="muted" style="font-size:13.5px;margin-bottom:18px">Taxas de referência do mercado que alimentam as projeções e simulações do app. Tudo funciona offline — atualize você mesmo quando elas mudarem (por exemplo, depois de uma decisão do Copom).${r.customized ? ' Você atualizou em ' + new Date(r.updatedAt).toLocaleDateString('pt-BR') + '.' : ' Os valores abaixo são só um ponto de partida; ajuste para a realidade de hoje.'}</p>
+        <div class="rates-grid">
+          <label class="rate-field">
+            <span class="rate-name">Selic <small>meta anual do Copom</small></span>
+            <span class="rate-input"><input id="setSelic" type="number" step="0.05" min="0" inputmode="decimal" value="${r.selic}" /><i>% a.a.</i></span>
+          </label>
+          <label class="rate-field">
+            <span class="rate-name">CDI <small>referência da renda fixa</small></span>
+            <span class="rate-input"><input id="setCdi" type="number" step="0.05" min="0" inputmode="decimal" value="${r.cdi}" /><i>% a.a.</i></span>
+          </label>
+          <label class="rate-field">
+            <span class="rate-name">IPCA <small>inflação em 12 meses</small></span>
+            <span class="rate-input"><input id="setIpca" type="number" step="0.05" min="0" inputmode="decimal" value="${r.ipca}" /><i>% a.a.</i></span>
+          </label>
+        </div>
+        <div id="realReturnBox" class="rate-readout">${rateReadout(r.cdi, r.ipca)}</div>
+        <button class="btn btn-primary" style="margin-top:18px" onclick="App.saveSettings()">Salvar indexadores</button>
       </div>
       <div class="card">
         <h3>${ICON('users')} Banco de logins deste dispositivo</h3>
@@ -981,6 +1002,16 @@ const App = (() => {
           </div>
           ${s.persisted ? '' : `<button class="btn btn-primary btn-sm" onclick="App.requestPersistence()">${ICON('shield')} Proteger meus dados</button>`}`;
       });
+      // ganho real recalcula ao vivo enquanto edita os indexadores
+      const box = $('#realReturnBox');
+      const recalc = () => {
+        if (!box) return;
+        const cur = Store.rates();
+        const cdi = parseFloat($('#setCdi').value);
+        const ipca = parseFloat($('#setIpca').value);
+        box.innerHTML = rateReadout(Number.isFinite(cdi) ? cdi : cur.cdi, Number.isFinite(ipca) ? ipca : cur.ipca);
+      };
+      ['setCdi', 'setIpca'].forEach(idf => $('#' + idf)?.addEventListener('input', recalc));
     },
     consultor() {
       const scroll = $('#chatScroll');
@@ -1685,14 +1716,39 @@ const App = (() => {
   function runConfirm() { const cb = _confirmCb; _confirmCb = null; closeModal(); if (cb) cb(); }
 
   /* ---------------- SETTINGS / REPORTS ACTIONS ---------------- */
+  /* ganho real (equação de Fisher): quanto o CDI rende acima da inflação */
+  function realReturnPct(cdi, ipca) { return ((1 + cdi / 100) / (1 + ipca / 100) - 1) * 100; }
+  function pctBR(v, dec = 2) { return v.toFixed(dec).replace('.', ','); }
+  function rateReadout(cdi, ipca) {
+    const real = realReturnPct(cdi, ipca);
+    const cls = real >= 0 ? 'pos' : 'neg';
+    const sign = real >= 0 ? '+' : '−';
+    return `<div class="rr-main">
+        <span class="rr-label">${ICON('sprout')} Ganho real do CDI</span>
+        <strong class="rr-val ${cls}">${sign}${pctBR(Math.abs(real))}%<small>ao ano, acima da inflação</small></strong>
+      </div>
+      <p class="rr-note">É o quanto seu dinheiro na renda fixa cresce de verdade depois de descontar a inflação (IPCA). Esse é o número que aumenta seu patrimônio — não o rendimento "de fachada".</p>`;
+  }
+
   function saveSettings() {
     const name = $('#setName').value.trim();
     if (name) Store.updateUser(state.user.id, { name });
     state.user.name = name || state.user.name;
-    Store.setSettings({
+    const patch = {
       monthlyIncome: parseFloat($('#setIncome').value) || 0,
       emergencyMonths: parseInt($('#setEmerg').value) || 6
-    });
+    };
+    const selic = $('#setSelic'), cdi = $('#setCdi'), ipca = $('#setIpca');
+    if (selic && cdi && ipca) {
+      const cur = Store.rates();
+      patch.rates = {
+        selic: parseFloat(selic.value) || cur.selic,
+        cdi: parseFloat(cdi.value) || cur.cdi,
+        ipca: parseFloat(ipca.value) || cur.ipca,
+        updatedAt: Date.now()
+      };
+    }
+    Store.setSettings(patch);
     $('#userName').textContent = state.user.name;
     $('#userAvatar').textContent = (state.user.name[0] || 'U').toUpperCase();
     toast('Ajustes salvos');

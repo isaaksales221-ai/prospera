@@ -526,6 +526,36 @@ label:hover{color:var(--text)}
 .cashflow-card.danger:hover{border-color:var(--red-line)}
 .cashflow-card .pill.pos{background:var(--green-soft);color:var(--green)}
 
+/* ===================== INDEXADORES ECONÔMICOS ===================== */
+.tag-base{margin-left:auto;font-size:9.5px;text-transform:uppercase;letter-spacing:.07em;
+  font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap;
+  background:var(--red-soft);color:var(--red);border:1px solid var(--red-line)}
+.rates-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.rate-field{gap:9px}
+.rate-name{display:flex;flex-direction:column;gap:2px;font-weight:700;color:var(--text);font-size:14px}
+.rate-name small{font-weight:500;color:var(--muted-2);font-size:11.5px;letter-spacing:0}
+.rate-input{display:flex;align-items:center;gap:7px;background:var(--bg-2);
+  border:1px solid var(--line);border-radius:11px;padding:0 14px;transition:.16s}
+.rate-input:focus-within{border-color:var(--red);box-shadow:var(--ring);background:var(--bg)}
+.rate-input input{flex:1;min-width:0;border:0;background:transparent;box-shadow:none;border-radius:0;
+  padding:13px 0;font-family:var(--mono);font-size:17px;font-weight:600;letter-spacing:-.01em;
+  font-variant-numeric:tabular-nums}
+.rate-input input:focus,.rate-input input:hover{box-shadow:none;background:transparent;border:0}
+.rate-input i{font-style:normal;color:var(--muted-2);font-size:12.5px;font-weight:600;white-space:nowrap}
+.rate-readout{margin-top:18px;padding:16px 18px;border-radius:13px;
+  background:var(--bg-2);border:1px solid var(--line);display:flex;flex-direction:column;gap:9px}
+.rr-main{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.rr-label{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.rr-label svg{width:15px;height:15px;color:var(--red)}
+.rr-val{font-family:var(--display);font-size:clamp(20px,5.2vw,27px);font-weight:800;letter-spacing:-.02em;
+  font-variant-numeric:tabular-nums;white-space:nowrap}
+.rr-val small{font-family:var(--body);font-size:12px;font-weight:600;color:var(--muted);
+  letter-spacing:0;margin-left:7px;text-transform:none}
+.rr-val.pos{color:var(--green)} .rr-val.neg{color:var(--red)}
+.rr-note{font-size:12.5px;color:var(--muted);line-height:1.55;margin:0}
+@media(max-width:640px){.rates-grid{grid-template-columns:1fr}}
+
 /* ===================== PATRIMÔNIO ===================== */
 .networth-hero{background:linear-gradient(135deg,rgba(255,59,70,.1),var(--bg-2) 60%);overflow:hidden}
 .networth-hero .nw-label{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:700;
