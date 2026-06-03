@@ -124,5 +124,37 @@ const Charts = (() => {
     </svg>`;
   }
 
-  return { donut, bars, line, forecast, PALETTE };
+  /* Curva de juros compostos rumo à independência financeira.
+     A área entre o capital (linha de cima) e o total aportado (linha de baixo)
+     é o que os juros geraram sozinhos — o "dinheiro trabalhando por você". */
+  function growth(series, fiNumber, { height = 150, width = 560 } = {}) {
+    if (!series || series.length < 2) return '';
+    const caps = series.map(p => p.capital);
+    const maxV = Math.max(fiNumber || 0, ...caps) || 1;
+    const stepX = width / (series.length - 1);
+    const x = i => +(i * stepX).toFixed(1);
+    const y = v => +(height - 10 - (v / maxV) * (height - 20)).toFixed(1);
+
+    const capPts = series.map((p, i) => `${x(i)},${y(p.capital)}`);
+    const conPts = series.map((p, i) => `${x(i)},${y(p.contributed)}`);
+    const areaPts = capPts.concat([...conPts].reverse()).join(' ');
+
+    const gid = 'gr' + Math.random().toString(36).slice(2, 8);
+    const fiY = y(Math.min(fiNumber, maxV));
+    const lastI = series.length - 1;
+
+    return `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" style="width:100%;height:${height}px">
+      <defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="var(--red)" stop-opacity="0.34"></stop>
+        <stop offset="1" stop-color="var(--red)" stop-opacity="0.04"></stop>
+      </linearGradient></defs>
+      <line x1="0" y1="${fiY}" x2="${width}" y2="${fiY}" stroke="var(--amber)" stroke-width="1.5" stroke-dasharray="6 5"></line>
+      <polygon fill="url(#${gid})" points="${areaPts}"></polygon>
+      <polyline fill="none" stroke="var(--muted-2)" stroke-width="1.6" stroke-dasharray="5 4" stroke-linejoin="round" points="${conPts.join(' ')}"></polyline>
+      <polyline fill="none" stroke="var(--red)" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round" points="${capPts.join(' ')}"></polyline>
+      <circle cx="${x(lastI)}" cy="${y(caps[lastI])}" r="3.6" fill="var(--red)"></circle>
+    </svg>`;
+  }
+
+  return { donut, bars, line, forecast, growth, PALETTE };
 })();

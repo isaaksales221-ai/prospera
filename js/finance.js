@@ -220,8 +220,90 @@ const Finance = (() => {
     };
   }
 
+  /* ============================================================
+     INDEPENDÊNCIA FINANCEIRA — juros compostos a favor
+     Projeta o patrimônio investido crescendo mês a mês com o
+     ganho REAL (acima da inflação) mais os aportes mensais, até
+     alcançar o "número da liberdade": o patrimônio que sustenta
+     seu custo de vida pela regra dos 4% (retirada segura anual).
+     Tudo offline, baseado nos indexadores que o usuário informou.
+     ============================================================ */
+  const SWR = 0.04;                 // safe withdrawal rate — regra dos 4%
+  const FI_HORIZON_YEARS = 60;      // teto da simulação
+
+  function freedomPlan(monthKeyStr, opts = {}) {
+    const a = Insights.analyze(monthKeyStr);
+    const r = Store.rates();
+    const nw = netWorth();
+
+    // ganho real anual: quanto o dinheiro cresce de verdade, já descontada a inflação
+    const realAnnual = (1 + r.cdi / 100) / (1 + r.ipca / 100) - 1;
+    const monthlyReturn = Math.pow(1 + realAnnual, 1 / 12) - 1;
+
+    // custo de vida de referência: média dos últimos meses (mais estável que um mês só)
+    const monthlyExpense = a.avgExpense || a.expense || 0;
+    const annualExpense = monthlyExpense * 12;
+    const fiNumber = annualExpense / SWR;   // = 25× o custo anual
+
+    // capital de partida = o que já está investido / líquido / guardado em metas
+    const portfolio = nw.liquid + nw.invested + nw.goalsSaved;
+    const startCapital = Math.max(0, opts.startCapital != null ? opts.startCapital : portfolio);
+
+    // aporte padrão = o que sobra/é guardado por mês hoje (arredondado pra um número limpo)
+    const rawDefault = Math.max(0, allocation(monthKeyStr).saveActual);
+    const defaultContribution = Math.round(rawDefault / 50) * 50;
+    const contribution = Math.max(0, opts.contribution != null ? opts.contribution : defaultContribution);
+
+    const hasData = monthlyExpense > 0;
+
+    // simulação mês a mês
+    const monthsCap = FI_HORIZON_YEARS * 12;
+    let capital = startCapital;
+    let contributedTotal = startCapital;   // principal de fato aportado (base do "quanto é juro")
+    let reachedMonths = (startCapital >= fiNumber && fiNumber > 0) ? 0 : null;
+    const raw = [{ month: 0, capital, contributed: contributedTotal }];
+
+    if (reachedMonths === null) {
+      for (let month = 1; month <= monthsCap; month++) {
+        capital = capital * (1 + monthlyReturn) + contribution;
+        contributedTotal += contribution;
+        raw.push({ month, capital, contributed: contributedTotal });
+        if (capital >= fiNumber && fiNumber > 0) { reachedMonths = month; break; }
+      }
+    }
+
+    const feasible = reachedMonths !== null;
+    // série pra o gráfico: um ponto por ano + o ponto final (cruzamento)
+    const series = raw.filter((p, i) => p.month % 12 === 0 || i === raw.length - 1)
+      .map(p => ({
+        month: p.month,
+        year: +(p.month / 12).toFixed(2),
+        capital: p.capital,
+        contributed: p.contributed
+      }));
+
+    const last = raw[raw.length - 1];
+    const finalCapital = last.capital;
+    const totalContributed = last.contributed;
+    const interestEarned = Math.max(0, finalCapital - totalContributed);
+
+    return {
+      hasData,
+      fiNumber, monthlyExpense, annualExpense, swr: SWR,
+      realAnnualPct: realAnnual * 100,
+      startCapital, contribution, defaultContribution,
+      feasible,
+      reachedMonths,
+      reachedYears: reachedMonths != null ? reachedMonths / 12 : null,
+      series,
+      finalCapital, totalContributed, interestEarned,
+      progressPct: fiNumber > 0 ? Math.min(100, (startCapital / fiNumber) * 100) : 0,
+      incomeRef: a.refIncome
+    };
+  }
+
   return {
     METHODS, FUNCTIONS, NEEDS, WANTS, SAVE, defaultMethod,
-    allocation, moneyFunctions, reserve, netWorth, simulatePayoff
+    allocation, moneyFunctions, reserve, netWorth, simulatePayoff, freedomPlan
   };
 })();

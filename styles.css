@@ -571,6 +571,38 @@ label:hover{color:var(--text)}
 .nw-term strong.pos{color:var(--text)} .nw-term strong.neg{color:var(--red)}
 .nw-op{font-family:var(--display);font-size:26px;color:var(--muted-2);font-weight:700}
 
+/* ===================== INDEPENDÊNCIA FINANCEIRA ===================== */
+.freedom-card .fi-number{display:flex;flex-wrap:wrap;align-items:flex-end;gap:18px 28px;
+  padding:18px 20px;border-radius:14px;border:1px solid var(--red-line);margin-bottom:20px;
+  background:linear-gradient(135deg,rgba(255,59,70,.08),var(--bg-2) 62%)}
+.fi-target{display:flex;flex-direction:column;gap:3px;min-width:200px;flex:1}
+.fi-k{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
+.fi-v{font-family:var(--display);font-size:clamp(30px,5.4vw,42px);font-weight:800;letter-spacing:-.03em;
+  line-height:1;color:var(--text);font-variant-numeric:tabular-nums}
+.fi-sub{font-size:12px;color:var(--muted-2);font-weight:600}
+.fi-progress{flex:1;min-width:200px;display:flex;flex-direction:column;gap:8px}
+.fi-progress .bar{height:9px}
+.fi-progress .bar>span{background:linear-gradient(90deg,var(--red),var(--red-2))}
+.fi-progress small{font-size:11.5px;line-height:1.5}
+.aporte-control{margin-bottom:4px}
+.aporte-out{font-family:var(--mono);font-size:18px;font-weight:700;color:var(--red);
+  font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.fi-range{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:999px;
+  background:var(--bg-2);border:1px solid var(--line-soft);outline:none;cursor:pointer;margin:4px 0 2px}
+.fi-range::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:22px;height:22px;border-radius:50%;
+  background:var(--red);border:3px solid var(--bg);box-shadow:0 2px 8px rgba(255,59,70,.45);
+  cursor:pointer;transition:transform .15s}
+.fi-range::-webkit-slider-thumb:hover{transform:scale(1.12)}
+.fi-range::-webkit-slider-thumb:active{transform:scale(.96)}
+.fi-range::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--red);
+  border:3px solid var(--bg);box-shadow:0 2px 8px rgba(255,59,70,.45);cursor:pointer}
+.fi-range:focus-visible{box-shadow:var(--ring)}
+.fi-eta{font-size:14px;line-height:1.6;color:var(--text);margin:16px 0 4px}
+.growth-chart{margin:6px -2px 2px;border-radius:12px;overflow:hidden}
+.growth-legend{gap:16px;flex-wrap:wrap;margin:10px 0 2px;font-size:12px}
+.freedom-card .kv .v{font-size:clamp(15px,4.2vw,20px);white-space:nowrap;font-variant-numeric:tabular-nums}
+@media(max-width:520px){.freedom-card .fi-number{gap:14px}.fi-target,.fi-progress{min-width:100%}}
+
 /* ===================== SIMULADOR DE DÍVIDAS ===================== */
 .sim-order{border-top:1px solid var(--line-soft);padding-top:16px}
 .sim-step{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:11px;background:var(--bg-2);

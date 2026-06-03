@@ -726,6 +726,8 @@ const App = (() => {
     /* ---------- PATRIMÔNIO (balanço: ativos − passivos) ---------- */
     patrimonio() {
       const nw = Finance.netWorth();
+      const fp = Finance.freedomPlan(state.month);
+      const sliderMax = Math.max(1000, Math.ceil(Math.max(fp.incomeRef || 0, fp.contribution, fp.defaultContribution) * 1.5 / 100) * 100);
       const assets = Store.data().assets || [];
       const KINDS = { liquid: 'Liquidez', invest: 'Investimento', property: 'Bem / patrimônio', other: 'Outro' };
 
@@ -764,6 +766,38 @@ const App = (() => {
           <div class="row spread"><h3 style="border:none;padding:0;margin:0">${ICON('wallet')} Seus ativos</h3></div>
           <div class="list" style="margin-top:14px">${assetRows}</div>
         </div>
+      </div>
+
+      <div class="card freedom-card" style="margin-top:18px">
+        <div class="row spread"><h3>${ICON('sprout')} Independência financeira</h3>
+          <span class="tag-base">juros compostos a favor</span></div>
+        ${fp.hasData ? `
+        <p class="muted" style="font-size:13px;margin:-6px 0 18px">Seu <strong>número da liberdade</strong> é o patrimônio que, rendendo sozinho, paga seu custo de vida — pela regra dos 4% de retirada segura ao ano. Hoje seu custo médio é ${fmtBRL(fp.monthlyExpense)}/mês.</p>
+
+        <div class="fi-number">
+          <div class="fi-target">
+            <span class="fi-k">Você precisa de</span>
+            <strong class="fi-v">${fmtBRL(fp.fiNumber)}</strong>
+            <span class="fi-sub">= 25× seu custo de vida anual</span>
+          </div>
+          <div class="fi-progress">
+            <div class="bar"><span style="width:${Math.min(100, fp.progressPct).toFixed(1)}%"></span></div>
+            <small class="muted">${pctBR(fp.progressPct, 1)}% do caminho · você já tem ${fmtBRL(fp.startCapital)} de capital de partida</small>
+          </div>
+        </div>
+
+        <div class="aporte-control">
+          <div class="row spread" style="font-size:13px;margin-bottom:9px">
+            <span style="font-weight:600;display:flex;align-items:center;gap:7px">${ICON('sprout')} Quanto você investe por mês</span>
+            <output id="aporteOut" class="aporte-out">${fmtBRL(fp.contribution)}</output>
+          </div>
+          <input type="range" id="aporteRange" class="fi-range" min="0" max="${sliderMax}" step="50" value="${Math.min(fp.contribution, sliderMax)}" aria-label="Aporte mensal" />
+        </div>
+
+        <div id="freedomResult">${freedomResultHTML(fp)}</div>
+
+        <p class="muted" style="font-size:11.5px;margin-top:16px;opacity:.82">Simulação educativa baseada no ganho real (CDI acima do IPCA) que você informou em Ajustes. Rentabilidade passada não garante resultado futuro — não é recomendação de investimento.</p>
+        ` : empty('sprout', 'Registre suas despesas e indique os indexadores em Ajustes para calcular seu número da independência financeira.')}
       </div>`;
     },
 
@@ -1012,6 +1046,17 @@ const App = (() => {
         box.innerHTML = rateReadout(Number.isFinite(cdi) ? cdi : cur.cdi, Number.isFinite(ipca) ? ipca : cur.ipca);
       };
       ['setCdi', 'setIpca'].forEach(idf => $('#' + idf)?.addEventListener('input', recalc));
+    },
+    patrimonio() {
+      // recalcula a projeção de independência ao vivo conforme arrasta o aporte
+      const range = $('#aporteRange'), out = $('#aporteOut'), result = $('#freedomResult');
+      if (!range || !result) return;
+      range.addEventListener('input', () => {
+        const contribution = parseInt(range.value, 10) || 0;
+        if (out) out.textContent = fmtBRL(contribution);
+        const fp = Finance.freedomPlan(state.month, { contribution });
+        result.innerHTML = freedomResultHTML(fp);
+      });
     },
     consultor() {
       const scroll = $('#chatScroll');
@@ -1728,6 +1773,38 @@ const App = (() => {
         <strong class="rr-val ${cls}">${sign}${pctBR(Math.abs(real))}%<small>ao ano, acima da inflação</small></strong>
       </div>
       <p class="rr-note">É o quanto seu dinheiro na renda fixa cresce de verdade depois de descontar a inflação (IPCA). Esse é o número que aumenta seu patrimônio — não o rendimento "de fachada".</p>`;
+  }
+
+  /* ---- independência financeira (juros compostos) ---- */
+  function fmtYears(years) {
+    if (years == null) return '—';
+    const totalM = Math.max(0, Math.round(years * 12));
+    const y = Math.floor(totalM / 12), m = totalM % 12;
+    const yt = y > 0 ? `${y} ${y === 1 ? 'ano' : 'anos'}` : '';
+    const mt = m > 0 ? `${m} ${m === 1 ? 'mês' : 'meses'}` : '';
+    if (yt && mt) return `${yt} e ${mt}`;
+    return yt || mt || 'menos de 1 mês';
+  }
+  function freedomResultHTML(fp) {
+    const eta = !fp.feasible
+      ? `<strong style="color:var(--amber)">Nesse ritmo, a meta não chega em 60 anos.</strong> Aumente o aporte para ver a curva alcançar a linha da liberdade.`
+      : fp.reachedMonths === 0
+        ? `<strong style="color:var(--green)">Você já alcançou seu número da liberdade.</strong> O patrimônio investido já cobriria seu custo de vida pela regra dos 4%.`
+        : `Aportando ${fmtBRL(fp.contribution)}/mês, você chega lá em <strong style="color:var(--red)">${fmtYears(fp.reachedYears)}</strong> — com ganho real de ${pctBR(fp.realAnnualPct)}% ao ano.`;
+    const chart = Charts.growth(fp.series, fp.fiNumber);
+    return `
+      <p class="fi-eta">${eta}</p>
+      ${chart ? `<div class="growth-chart">${chart}</div>
+      <div class="row growth-legend">
+        <span class="legend-item"><span class="legend-dot" style="background:var(--red)"></span>Patrimônio</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--muted-2)"></span>Total aportado</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--amber)"></span>Meta da liberdade</span>
+      </div>` : ''}
+      <div class="kv-grid" style="grid-template-columns:repeat(auto-fit,minmax(116px,1fr));margin-top:12px">
+        <div class="kv"><div class="k">Você aporta</div><div class="v">${fmtBRL(fp.totalContributed)}</div></div>
+        <div class="kv"><div class="k">Juros a favor</div><div class="v" style="color:var(--red)">+${fmtBRL(fp.interestEarned)}</div></div>
+        <div class="kv"><div class="k">Patrimônio final</div><div class="v" style="color:var(--green)">${fmtBRL(fp.finalCapital)}</div></div>
+      </div>`;
   }
 
   function saveSettings() {
