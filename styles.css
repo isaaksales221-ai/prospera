@@ -517,6 +517,15 @@ label:hover{color:var(--text)}
   font-variant-numeric:tabular-nums}
 .reserve-lbl{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;margin-top:5px;font-weight:700}
 
+/* ===================== FLUXO DE CAIXA PROJETADO ===================== */
+.cashflow-card .fc-chart{margin:8px -2px 2px;border-radius:12px;overflow:hidden}
+.cashflow-card .kv{padding:14px}
+.cashflow-card .kv .v{font-size:clamp(15px,4.4vw,21px);white-space:nowrap;font-variant-numeric:tabular-nums}
+.cashflow-card.danger{border-color:var(--red-line);
+  box-shadow:0 18px 44px -28px var(--red-glow),inset 0 1px 0 rgba(255,255,255,.04)}
+.cashflow-card.danger:hover{border-color:var(--red-line)}
+.cashflow-card .pill.pos{background:var(--green-soft);color:var(--green)}
+
 /* ===================== PATRIMÔNIO ===================== */
 .networth-hero{background:linear-gradient(135deg,rgba(255,59,70,.1),var(--bg-2) 60%);overflow:hidden}
 .networth-hero .nw-label{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:700;

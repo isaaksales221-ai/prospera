@@ -308,7 +308,9 @@ const App = (() => {
       const recent = monthTx().slice(0, 6);
       const alerts = Insights.alerts(state.month);
       const proj = Insights.projection(state.month);
+      const fc = Insights.cashflowForecast(state.month);
       const comp = Insights.categoryComparison(state.month).slice(0, 4);
+      const fcKind = { tx: 'agendado', recurring: 'fixo mensal', debt: 'parcela de dívida' };
 
       const catItems = a.topCats.slice(0, 6).map(c => ({ label: c.name, value: c.value }));
 
@@ -355,6 +357,28 @@ const App = (() => {
           ${Charts.bars(groups)}
         </div>
       </div>
+
+      ${fc ? `<div class="card cashflow-card${fc.firstNegative ? ' danger' : ''}" style="margin-bottom:16px">
+        <div class="row spread"><h3>${ICON('radar')} Fluxo de caixa projetado</h3>
+          <span class="pill ${fc.firstNegative ? 'neg' : 'pos'}">${fc.firstNegative ? 'Atenção' : 'No azul'}</span></div>
+        <p class="muted" style="font-size:13px;margin:-6px 0 14px">${fc.firstNegative
+          ? `No dia <strong style="color:var(--red)">${formatDate(fc.firstNegative.date)}</strong> seu saldo deve ficar negativo (${fmtBRL(fc.firstNegative.balance)})${fc.daysUntilNegative != null ? ` — daqui a ${fc.daysUntilNegative} dia(s)` : ''}. Antecipe uma entrada ou adie um gasto antes dessa data.`
+          : `Seu caixa se mantém positivo nos próximos ${fc.horizonDays} dias. O menor saldo previsto é ${fmtBRL(fc.lowest.balance)} em ${formatDate(fc.lowest.date)}.`}</p>
+        <div class="fc-chart">${Charts.forecast(fc.series)}</div>
+        <div class="kv-grid" style="grid-template-columns:repeat(auto-fit,minmax(118px,1fr));margin-top:10px">
+          <div class="kv"><div class="k">Saldo hoje</div><div class="v" style="color:${fc.startCash >= 0 ? 'var(--text)' : 'var(--red)'}">${fmtBRL(fc.startCash)}</div></div>
+          <div class="kv"><div class="k">Entradas (${fc.horizonDays}d)</div><div class="v" style="color:var(--green)">+${fmtBRL(fc.totalIn)}</div></div>
+          <div class="kv"><div class="k">Saídas (${fc.horizonDays}d)</div><div class="v" style="color:var(--red)">−${fmtBRL(fc.totalOut)}</div></div>
+          <div class="kv"><div class="k">Saldo em ${fc.horizonDays}d</div><div class="v" style="color:${fc.endBalance >= 0 ? 'var(--green)' : 'var(--red)'}">${fmtBRL(fc.endBalance)}</div></div>
+        </div>
+        ${fc.events.length ? `<p class="muted" style="font-size:12px;margin:16px 0 6px;font-weight:600">Próximos lançamentos previstos</p>
+          <div class="list">${fc.events.slice(0, 3).map(e => `<div class="list-item">
+            <div class="li-icon">${ICON(e.delta >= 0 ? 'arrowUp' : 'arrowDown')}</div>
+            <div class="li-body"><strong>${esc(e.label)}</strong><small>${formatDate(e.date)} · ${fcKind[e.kind] || 'previsto'}</small></div>
+            <div class="li-amt ${e.delta >= 0 ? 'pos' : 'neg'}">${e.delta >= 0 ? '+' : '−'} ${fmtBRL(Math.abs(e.delta))}</div>
+          </div>`).join('')}</div>` : ''}
+        <p class="muted" style="font-size:11.5px;margin-top:12px;opacity:.82">Estimativa a partir dos seus lançamentos fixos, parcelas e vencimentos — não inclui saldos que você não registrou.</p>
+      </div>` : ''}
 
       ${al.hasIncome ? `<div class="grid cols-2" style="margin-bottom:16px">
         <div class="card">

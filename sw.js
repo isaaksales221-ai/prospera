@@ -1,23 +1,23 @@
 /* ============================================================
    PROSPERA — Service Worker (offline-first app shell)
    ============================================================ */
-const CACHE = 'prospera-v19';
+const CACHE = 'prospera-v20';
 const ASSETS = [
   './',
   'index.html',
-  'styles.css?v=19',
-  'js/config.js?v=19',
-  'js/icons.js?v=19',
-  'js/cloud.js?v=19',
-  'js/store.js?v=19',
-  'js/auth.js?v=19',
-  'js/charts.js?v=19',
-  'js/insights.js?v=19',
-  'js/finance.js?v=19',
-  'js/bank.js?v=19',
-  'js/advisor.js?v=19',
-  'js/reports.js?v=19',
-  'js/app.js?v=19',
+  'styles.css?v=20',
+  'js/config.js?v=20',
+  'js/icons.js?v=20',
+  'js/cloud.js?v=20',
+  'js/store.js?v=20',
+  'js/auth.js?v=20',
+  'js/charts.js?v=20',
+  'js/insights.js?v=20',
+  'js/finance.js?v=20',
+  'js/bank.js?v=20',
+  'js/advisor.js?v=20',
+  'js/reports.js?v=20',
+  'js/app.js?v=20',
   'hero.svg',
   'manifest.json',
   'icon.svg',

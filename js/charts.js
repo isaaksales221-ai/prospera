@@ -96,5 +96,33 @@ const Charts = (() => {
     </svg>`;
   }
 
-  return { donut, bars, line, PALETTE };
+  /* Área de fluxo de caixa projetado (com linha-base no zero) */
+  function forecast(series, { height = 104, width = 560 } = {}) {
+    if (!series || series.length < 2) return '';
+    const vals = series.map(p => p.balance);
+    const min = Math.min(...vals, 0), max = Math.max(...vals, 0);
+    const range = max - min || 1;
+    const stepX = width / (series.length - 1);
+    const y = v => +(height - 10 - ((v - min) / range) * (height - 20)).toFixed(1);
+    const pts = vals.map((v, i) => `${(i * stepX).toFixed(1)},${y(v)}`);
+    const zeroY = y(0);
+    const neg = min < 0;
+    const color = neg ? 'var(--red)' : 'var(--green)';
+    const gid = 'fc' + Math.random().toString(36).slice(2, 8);
+    // ponto mais baixo
+    let li = 0; vals.forEach((v, i) => { if (v < vals[li]) li = i; });
+    const lx = (li * stepX).toFixed(1), ly = y(vals[li]);
+    return `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" style="width:100%;height:${height}px">
+      <defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="${color}" stop-opacity="0.20"></stop>
+        <stop offset="1" stop-color="${color}" stop-opacity="0"></stop>
+      </linearGradient></defs>
+      <polygon fill="url(#${gid})" points="0,${height} ${pts.join(' ')} ${width},${height}"></polygon>
+      <line x1="0" y1="${zeroY}" x2="${width}" y2="${zeroY}" stroke="var(--line)" stroke-width="1" stroke-dasharray="5 5"></line>
+      <polyline fill="none" stroke="${color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" points="${pts.join(' ')}"></polyline>
+      <circle cx="${lx}" cy="${ly}" r="3.5" fill="${color}"></circle>
+    </svg>`;
+  }
+
+  return { donut, bars, line, forecast, PALETTE };
 })();

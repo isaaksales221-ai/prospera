@@ -97,6 +97,110 @@ const Insights = (() => {
     };
   }
 
+  /* ---- FLUXO DE CAIXA PROJETADO (próximos N dias) ----
+     Projeta o saldo dia a dia a partir de hoje usando:
+       • transações já lançadas com data futura (recorrentes do mês já geradas, parcelas)
+       • lançamentos fixos projetados para meses ainda não gerados
+       • pagamentos mínimos de dívidas nas datas de vencimento
+     Avisa qual o primeiro dia em que o saldo fica negativo. */
+  function cashflowForecast(monthKeyStr, horizonDays) {
+    horizonDays = horizonDays || 60;
+    const now = new Date();
+    const curKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    if (monthKeyStr !== curKey) return null; // só projeta a partir de hoje
+
+    const d = Store.data();
+    const tx = d.transactions || [];
+    const recurring = d.recurring || [];
+    const debts = d.debts || [];
+
+    const pad = n => String(n).padStart(2, '0');
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const end = new Date(today); end.setDate(end.getDate() + horizonDays);
+    const isoOf = dt => `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}`;
+    const todayISO = isoOf(today), endISO = isoOf(end);
+
+    // saldo de caixa estimado hoje: tudo que já entrou menos tudo que já saiu até hoje
+    let startCash = 0;
+    tx.forEach(t => { if (t.date <= todayISO) startCash += t.type === 'income' ? t.amount : -t.amount; });
+
+    const events = [];
+    const addEvent = (dateISO, label, delta, kind) => {
+      if (dateISO > todayISO && dateISO <= endISO) events.push({ date: dateISO, label, delta, kind });
+    };
+
+    // 1) transações já lançadas com data futura dentro do horizonte
+    tx.forEach(t => {
+      if (t.date > todayISO && t.date <= endISO) {
+        addEvent(t.date, t.description || catInfo(t.type, t.category).name,
+          t.type === 'income' ? t.amount : -t.amount, 'tx');
+      }
+    });
+
+    // meses cobertos pelo horizonte (a partir do mês atual)
+    const monthsAhead = [];
+    { let y = now.getFullYear(), m = now.getMonth();
+      for (let i = 0; i <= Math.ceil(horizonDays / 28) + 1; i++) {
+        monthsAhead.push(`${y}-${pad(m + 1)}`); m++; if (m > 11) { m = 0; y++; }
+      } }
+
+    // 2) lançamentos fixos projetados — só para meses ainda NÃO gerados em transações
+    recurring.forEach(r => {
+      monthsAhead.forEach(mk => {
+        if (tx.some(t => t.recurringId === r.id && monthKey(t.date) === mk)) return; // já contabilizado
+        const [yy, mm] = mk.split('-').map(Number);
+        const dim = new Date(yy, mm, 0).getDate();
+        const day = Math.min(Math.max(1, r.day || 1), dim);
+        addEvent(`${mk}-${pad(day)}`, r.description || catInfo(r.type, r.category).name,
+          r.type === 'income' ? r.amount : -r.amount, 'recurring');
+      });
+    });
+
+    // 3) pagamentos mínimos de dívidas (agendados, ainda não viraram transação)
+    debts.forEach(x => {
+      let remaining = (x.total || 0) - paidOf(x);
+      const min = x.minPayment || 0;
+      if (remaining <= 0 || min <= 0 || !x.dueDate) return;
+      const dueDay = new Date(x.dueDate + 'T00:00:00').getDate();
+      monthsAhead.forEach(mk => {
+        if (remaining <= 0) return;
+        const [yy, mm] = mk.split('-').map(Number);
+        const dim = new Date(yy, mm, 0).getDate();
+        const dISO = `${mk}-${pad(Math.min(dueDay, dim))}`;
+        if (dISO <= todayISO || dISO > endISO) return;
+        const pay = Math.min(min, remaining);
+        remaining -= pay;
+        addEvent(dISO, 'Parcela: ' + (x.name || 'dívida'), -pay, 'debt');
+      });
+    });
+
+    if (!events.length) return null; // nada a projetar
+
+    events.sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : 0);
+
+    // série de saldo corrente + pontos críticos
+    let bal = startCash, totalIn = 0, totalOut = 0;
+    let lowest = { date: todayISO, balance: startCash };
+    let firstNegative = null;
+    const series = [{ date: todayISO, balance: startCash }];
+    events.forEach(e => {
+      bal += e.delta;
+      if (e.delta >= 0) totalIn += e.delta; else totalOut += -e.delta;
+      if (bal < lowest.balance) lowest = { date: e.date, balance: bal };
+      if (firstNegative === null && bal < 0) firstNegative = { date: e.date, balance: bal };
+      series.push({ date: e.date, balance: bal });
+    });
+
+    const daysUntil = iso => Math.round((new Date(iso + 'T00:00:00') - today) / 86400000);
+
+    return {
+      horizonDays, startCash, endISO, endBalance: bal,
+      totalIn, totalOut, events, series, lowest, firstNegative,
+      daysUntilNegative: firstNegative ? daysUntil(firstNegative.date) : null,
+      daysUntilLowest: daysUntil(lowest.date)
+    };
+  }
+
   /* ---- COMPARATIVO de categorias vs mês anterior ---- */
   function categoryComparison(monthKeyStr) {
     const a = analyze(monthKeyStr);
@@ -303,5 +407,5 @@ const Insights = (() => {
     return out;
   }
 
-  return { analyze, generate, healthScore, scoreLabel, paidOf, lastNMonths, shiftMonth, projection, categoryComparison, alerts };
+  return { analyze, generate, healthScore, scoreLabel, paidOf, lastNMonths, shiftMonth, projection, cashflowForecast, categoryComparison, alerts };
 })();
